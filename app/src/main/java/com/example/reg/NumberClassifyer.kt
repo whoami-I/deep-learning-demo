@@ -18,7 +18,7 @@ class NumberClassifyer {
         @Volatile
         private var instance: NumberClassifyer? = null
         private lateinit var context: Context
-        val NUMBER_CLASSIFY_FILENAME: String = "model.tflite"
+        val NUMBER_CLASSIFY_FILENAME: String = "model_cnn.tflite"
         val IMAGE_WIDTH = 28
         val IMAGE_HEIGHT = 28
         fun getInstance(): NumberClassifyer {
