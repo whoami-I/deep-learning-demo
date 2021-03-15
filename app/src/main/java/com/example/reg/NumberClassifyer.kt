@@ -33,7 +33,7 @@ class NumberClassifyer {
     }
 
 
-    private var result = Array(1) { FloatArray(10) }
+    private var resultArray = Array(1) { FloatArray(10) }
 
     /** Options for configuring the Interpreter.  */
     private val tfliteOptions =
@@ -57,8 +57,12 @@ class NumberClassifyer {
         tfliteOptions.addDelegate(gpuDelegate)
         tfliteOptions.setNumThreads(2)
         tflite = Interpreter(tfliteModel, tfliteOptions)
-        imgData = ByteBuffer.allocateDirect(IMAGE_HEIGHT * IMAGE_WIDTH * 4)
+        imgData = ByteBuffer.allocate(IMAGE_HEIGHT * IMAGE_WIDTH * 4)
             .order(ByteOrder.nativeOrder())
+    }
+
+    init {
+        System.loadLibrary("filters")
     }
 
     private val intValues = IntArray(IMAGE_HEIGHT * IMAGE_HEIGHT)
@@ -68,55 +72,73 @@ class NumberClassifyer {
     fun getNumber(bitmap: Bitmap): Int {
         if (bitmap.width != IMAGE_WIDTH || bitmap.height != IMAGE_HEIGHT) return -1
         bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-        Log.d("TAG", "------------array size:${result.size}")
-//        for (i in 0..(result.size - 1)) {
-//            result[i] = 0F
-//        }
+        Log.d("TAG", "------------array size:${resultArray.size}")
         var pixel = 0
         imgData.rewind()
-//        for (i in 0..(bitmap.height)) {
-//            for (j in 0..(bitmap.width - 1)) {
-//                val color = intValues[pixel++]
-//                val rColor = 255 - ((color.shr(8)) and 0xFF)
-//                imgData.putFloat(rColor.toFloat())
-//            }
-//        }
         for (i in 0 until bitmap.height) {
             for (j in 0 until bitmap.width) {
                 val color = intValues[pixel++]
                 val rColor = (color and 0xFF)
-//                val rColor = 255 - (color and 0xFF)
-//                val gColor =  (color.shr(8) and 0xFF)
-//                val bColor =  (color.shr(16) and 0xFF)
-//                val aColor =  (color.shr(24) and 0xFF)
                 imgData.putFloat(rColor.toFloat())
             }
         }
-        val stringB = StringBuffer()
-        pixel = 0
-//        for(i in 0 until bitmap.height){
-//            for(j in 0 until bitmap.width){
-//                val data = imgData.float
-//                stringB.append("$data ")
-//            }
-//        }
-//        print(stringB)
-//        Log.d("TAG","$stringB")
-
-        tflite.run(imgData, result)
-        result.forEach {
-            it.forEach { Log.d("TAGTAG", " result is ${it}") }
+//        imgData.compact()
+        detect(imgData,resultArray)
+        resultArray.forEach {
+            it.forEach { Log.d("TAGTAG", " the result is ${it}") }
         }
         var largest = Float.MIN_VALUE
         var index = -1
-        for (i in 0 until result[0].size) {
-            if (result[0][i] > largest) {
-                largest = result[0][i]
+        for (i in 0 until resultArray[0].size) {
+            if (resultArray[0][i] > largest) {
+                largest = resultArray[0][i]
                 index = i
             }
         }
         return index
     }
+
+    fun getNum(bitmap: Bitmap) {
+        Log.d("TAGTAG","byte order->${imgData.order()}");
+        bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        getNum(bitmap, bitmap.width, bitmap.height)
+    }
+
+    external fun getNum(bitmap: Bitmap, width: Int, height: Int);
+
+    fun detect(inData: ByteBuffer, result: Any) {
+        Log.d("TAGTAG"," is direct ${inData.isDirect}");
+
+        var pixel = 0
+//        inData.order(ByteOrder.nativeOrder())
+//        inData.rewind()
+//        for (i in 0 until 28) {
+//            for (j in 0 until 28) {
+//                val color = intValues[pixel++]
+//                val rColor = (color and 0xFF)
+//                inData.putFloat(rColor.toFloat())
+//            }
+//        }
+
+//        Thread.sleep(1000)
+
+        tflite.run(inData, result)
+
+
+        var largest = Float.MIN_VALUE
+        var index = -1
+        for (i in resultArray[0].indices) {
+            if (resultArray[0][i] > largest) {
+                largest = resultArray[0][i]
+                index = i
+            }
+        }
+        Log.d("TAGTAG","index is $index");
+    }
+
+//    fun detect(inData: ByteBuffer) {
+//        tflite.run(imgData, result)
+//    }
 
     /** Memory-map the model file in Assets.  */
     @Throws(IOException::class)

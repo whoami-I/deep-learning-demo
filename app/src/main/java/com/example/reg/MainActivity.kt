@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
                 Rect(0, 0, bitmapB.width, bitmapB.height), paint
             )
             canvas.setBitmap(null)
-            val number = NumberClassifyer.getInstance().getNumber(bitmapB)
+            val number = NumberClassifyer.getInstance().getNum(bitmapB)
 
 //            val decodeResource = BitmapFactory.decodeResource(resources, R.drawable.b4)
 //            val number = NumberClassifyer.getInstance().getNumber(decodeResource)
