@@ -30,12 +30,14 @@ class MainActivity : AppCompatActivity() {
                 Rect(0, 0, bitmapB.width, bitmapB.height), paint
             )
             canvas.setBitmap(null)
-            val number = NumberClassifyer.getInstance().getNum(bitmapB)
-
+            val start = System.currentTimeMillis()
+            val number = NumberClassifyer.getInstance().getNumber(bitmapB)
+            val end = System.currentTimeMillis()
+            Log.d("TAG", "${end - start}")
 //            val decodeResource = BitmapFactory.decodeResource(resources, R.drawable.b4)
 //            val number = NumberClassifyer.getInstance().getNumber(decodeResource)
             Log.d("TAG", "bumber is $number")
-            Toast.makeText(MainActivity@this,"bumber is $number",0).show()
+            Toast.makeText(MainActivity@ this, "bumber is $number", 0).show()
         }
     }
 }

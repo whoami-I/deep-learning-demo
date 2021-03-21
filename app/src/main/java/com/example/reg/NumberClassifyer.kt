@@ -1,6 +1,7 @@
 package com.example.reg
 
 import android.content.Context
+import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.util.Log
 import org.tensorflow.lite.Interpreter
@@ -57,7 +58,7 @@ class NumberClassifyer {
         tfliteOptions.addDelegate(gpuDelegate)
         tfliteOptions.setNumThreads(2)
         tflite = Interpreter(tfliteModel, tfliteOptions)
-        imgData = ByteBuffer.allocate(IMAGE_HEIGHT * IMAGE_WIDTH * 4)
+        imgData = ByteBuffer.allocateDirect(IMAGE_HEIGHT * IMAGE_WIDTH * 4)
             .order(ByteOrder.nativeOrder())
     }
 
@@ -66,6 +67,7 @@ class NumberClassifyer {
     }
 
     private val intValues = IntArray(IMAGE_HEIGHT * IMAGE_HEIGHT)
+
     /**
      * 传进来必须是一张灰度图
      */
@@ -83,7 +85,7 @@ class NumberClassifyer {
             }
         }
 //        imgData.compact()
-        detect(imgData,resultArray)
+        detect(imgData, resultArray)
         resultArray.forEach {
             it.forEach { Log.d("TAGTAG", " the result is ${it}") }
         }
@@ -98,8 +100,11 @@ class NumberClassifyer {
         return index
     }
 
+    /**
+     * 部分使用C++来进行的算法
+     */
     fun getNum(bitmap: Bitmap) {
-        Log.d("TAGTAG","byte order->${imgData.order()}");
+        Log.d("TAGTAG", "byte order->${imgData.order()}");
         bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
         getNum(bitmap, bitmap.width, bitmap.height)
     }
@@ -107,7 +112,7 @@ class NumberClassifyer {
     external fun getNum(bitmap: Bitmap, width: Int, height: Int);
 
     fun detect(inData: ByteBuffer, result: Any) {
-        Log.d("TAGTAG"," is direct ${inData.isDirect}");
+        Log.d("TAGTAG", " is direct ${inData.isDirect}");
 
         var pixel = 0
 //        inData.order(ByteOrder.nativeOrder())
@@ -133,12 +138,19 @@ class NumberClassifyer {
                 index = i
             }
         }
-        Log.d("TAGTAG","index is $index");
+        Log.d("TAGTAG", "index is $index");
     }
 
-//    fun detect(inData: ByteBuffer) {
-//        tflite.run(imgData, result)
-//    }
+    fun getNumberByNativeAlg(bitmap: Bitmap): Int {
+        return getNumberByNativeAlg(bitmap, bitmap.width, bitmap.height, context.assets)
+    }
+
+    external fun getNumberByNativeAlg(
+        bitmap: Bitmap,
+        width: Int,
+        height: Int,
+        assetManager: AssetManager
+    ): Int;
 
     /** Memory-map the model file in Assets.  */
     @Throws(IOException::class)
