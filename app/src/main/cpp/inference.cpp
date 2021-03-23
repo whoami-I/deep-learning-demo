@@ -27,6 +27,7 @@ int InferenceContext::get_num(JNIEnv *env, jobject bitmap, int width, int height
     out.convertTo(input, CV_32FC1);
     backend.invoke();
     float *result = backend.getOutputPtr();
+    std::vector<int> v1 = backend.interpreter_->outputs();
 
     float max = -100000;
     int index = -1;

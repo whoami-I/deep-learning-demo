@@ -8,8 +8,7 @@
 
 class TfBackend {
 // /nas/projects/on-device-ai/benchmarks/models/THEBEST99k_MACE/tflite/models/THEBEST99k_MACE-float32.lite
-    std::unique_ptr<tflite::FlatBufferModel> model_;
-    std::unique_ptr<tflite::Interpreter> interpreter_;
+
 
     std::string imageNode = "ImageTensor";
     std::string outputNode = "SemanticPredictions";
@@ -25,6 +24,8 @@ class TfBackend {
     void VerifyShapes();
 
 public:
+    std::unique_ptr<tflite::FlatBufferModel> model_;
+    std::unique_ptr<tflite::Interpreter> interpreter_;
     TfBackend(std::string modelPath);
 
     float* getInputPtr();

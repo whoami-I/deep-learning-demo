@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
             )
             canvas.setBitmap(null)
             val start = System.currentTimeMillis()
-            val number = NumberClassifyer.getInstance().getNumber(bitmapB)
+            val number = NumberClassifyer.getInstance().getNumberByNativeAlg(bitmapB)
             val end = System.currentTimeMillis()
             Log.d("TAG", "${end - start}")
 //            val decodeResource = BitmapFactory.decodeResource(resources, R.drawable.b4)
